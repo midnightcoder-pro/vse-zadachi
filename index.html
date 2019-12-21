@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Задачи с ответами</title>
+		<style type="text/css">
+			@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
+			body {
+				font-family: 'Roboto', sans-serif;
+				display: flex;
+				align-items: center;
+				flex-direction: column;
+				margin: 0;
+			}
+
+			* {
+				box-sizing: border-box;
+			}
+
+			nav {
+				padding: 20px;
+				position: sticky;
+				top: 0;
+				max-width: 1400px;
+				width: 100%;
+			}
+
+			input {
+				width: 100%;
+				display: block;
+				padding: 0 15px;
+				height: 40px;
+				box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.3);
+				border: none;
+				border-radius: 20px;
+				outline: none;
+			}
+
+			summary {
+				font-weight: bold;
+				outline: none;
+				user-select: none;
+				padding: 10px;
+			}
+
+			p {
+				margin: 0;
+			}
+
+			#problems {
+				max-width: 1440px;
+				width: 100%;
+				padding: 10px;
+			}
+
+			.answer {
+				border: 1px solid #ccc;
+				border-radius: 4px;
+				padding: 10px;
+			}
+			
+			mjx-mo {
+				color: chocolate
+			}
+
+			svg {
+				max-width: 400px;
+				max-height: 400px;
+				float: right;
+			}
+
+			.formula {
+				overflow: auto;
+			}
+
+			#links {
+				text-align: center;
+			}
+
+			#links > .current {
+				color: red
+			}
+		</style>
+	</head>
+	<body>
+		<nav><input type="text" placeholder="Поиск задачи" oninput="find(this)" autofocus></nav>
+		<div id="links">
+			<a href="#1" onclick="setCurrentPage(this)">Тепломассообмен</a>
+			<a href="#2" onclick="setCurrentPage(this)">Теплотехника</a>
+			<a href="#3" onclick="setCurrentPage(this)">Гидравлика</a>
+			<a href="#4" onclick="setCurrentPage(this)">Электротехника (ТОЭ)</a>
+		</div>
+		<div id="problems"></div>
+		<a href="https://github.com/midnightcoder-pro/vse-zadachi" style="position: fixed; right: 10px; bottom: 10px">Поставь звёздочку за старания)</a>
+		<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+		<script type="text/javascript">
+			if(!location.hash) location.hash = '#1'
+
+			let currentLink
+			let problems = []
+			let id
+
+			let timerID
+
+			let output = document.getElementById('problems')
+
+			async function setCurrentPage(link) {
+				if(!link) return
+
+				(currentLink || link).className = ''
+				currentLink = link
+				currentLink.className = 'current'
+
+				output.innerHTML = ''
+				
+				id = link.hash[1]
+				if(!problems[id]) problems[id] = await (await fetch('./problems' + link.hash[1] + '.json', {cache: 'force-cache'})).json()
+			}
+
+			setCurrentPage(document.querySelector('#links > [href="' + location.hash + '"]'))
+
+			function find(target) {
+				let query = target.value.trim().toLowerCase().split(/ +/)
+
+				clearTimeout(timerID)
+				timerID = setTimeout(() => {
+					if(query[0].length < 5) return output.innerHTML = ''
+
+					let result = ''
+					for(let {condition, answer, svg = ''} of problems[id]) {
+						if(query.reduce((has, current) => has && ~condition.toLowerCase().indexOf(current), 1))
+							result += '<b style="padding: 10px">Условие:</b>' + condition + '<details><summary>Решение</summary><div class="answer">' + svg + answer + '</div></details><br>'
+					}
+
+					output.innerHTML = result
+					MathJax.typeset()
+				}, 1000)
+			}
+		</script>
+	</body>
+</html>
